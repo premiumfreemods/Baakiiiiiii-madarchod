@@ -1,0 +1,648 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Control Panel</title>
+    <style>
+        :root {
+            --primary: #1a2a6c;
+            --secondary: #b21f1f;
+            --accent: #fdbb2d;
+            --success: #4cd964;
+            --warning: #ff9500;
+            --danger: #ff3b30;
+            --info: #007aff;
+            --dark: #0f1418;
+            --light: #e6eef8;
+            --card-bg: rgba(255, 255, 255, 0.08);
+            --card-border: rgba(255, 255, 255, 0.15);
+            --header-bg: rgba(0, 0, 0, 0.4);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--accent));
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: var(--light);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: var(--header-bg);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 1200px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to right, var(--light), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        .tab {
+            padding: 12px 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: 1px solid transparent;
+        }
+        
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: var(--accent);
+            box-shadow: 0 0 15px rgba(253, 187, 45, 0.3);
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 30px;
+        }
+        
+        .panel {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 30px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+        
+        .panel-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--accent);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .deposit-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            text-align: center;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        
+        .deposit-display.active {
+            background: rgba(209, 231, 221, 0.15);
+            border: 1px solid rgba(76, 217, 100, 0.4);
+        }
+        
+        .deposit-value {
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin: 10px 0;
+            color: var(--success);
+        }
+        
+        .status {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
+        
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 14px 25px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        button:active {
+            transform: scale(0.98);
+        }
+        
+        .add-btn {
+            background: linear-gradient(to right, var(--success), #5ac8fa);
+            color: white;
+        }
+        
+        .add-btn:hover {
+            background: linear-gradient(to right, #44c059, #4ab8e8);
+            box-shadow: 0 6px 12px rgba(76, 217, 100, 0.4);
+        }
+        
+        .remove-btn {
+            background: linear-gradient(to right, var(--danger), var(--warning));
+            color: white;
+        }
+        
+        .remove-btn:hover {
+            background: linear-gradient(to right, #e0352b, #e68500);
+            box-shadow: 0 6px 12px rgba(255, 59, 48, 0.4);
+        }
+        
+        .update-btn {
+            background: linear-gradient(to right, var(--info), #5856d6);
+            color: white;
+        }
+        
+        .update-btn:hover {
+            background: linear-gradient(to right, #0069d9, #4d4bc9);
+            box-shadow: 0 6px 12px rgba(0, 122, 255, 0.4);
+        }
+        
+        .firebase-path {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+            text-align: center;
+            word-break: break-all;
+        }
+        
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--light);
+            font-size: 1rem;
+        }
+        
+        input {
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--light);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(253, 187, 45, 0.2);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transform: translateX(150%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            border-left: 4px solid var(--success);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.error {
+            border-left-color: var(--danger);
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .panel {
+                max-width: 100%;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .tabs {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .tab {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Firebase Control Panel</h1>
+        <p class="subtitle">Manage deposits and settings in real-time</p>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="deposit">Deposit Control</div>
+            <div class="tab" data-tab="settings">Settings</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Deposit Control Tab -->
+        <div class="tab-content active" id="deposit-tab">
+            <!-- LZR Deposit Panel -->
+            <div class="panel">
+                <h2 class="panel-title">LZR Deposit</h2>
+                <div class="deposit-display" id="lzrDeposit">
+                    <p class="status">Status: <span id="lzrStatus">Loading...</span></p>
+                    <div class="deposit-value" id="lzrValue">-</div>
+                    <p>LZR Active</p>
+                </div>
+                <div class="button-group">
+                    <button class="add-btn" id="lzrAddBtn">
+                        <span>LZR ACTIVE</span>
+                    </button>
+                    <button class="remove-btn" id="lzrRemoveBtn">
+                        <span>REMOVE LZR</span>
+                    </button>
+                </div>
+                <div class="firebase-path">
+                    Path: deposit/deposit/xl
+                </div>
+            </div>
+            
+            <!-- Amount Panel -->
+            <div class="panel">
+                <h2 class="panel-title">Deposit Amount</h2>
+                <div class="deposit-display" id="amountDeposit">
+                    <p class="status">Status: <span id="amountStatus">Loading...</span></p>
+                    <div class="deposit-value" id="amountValue">-</div>
+                    <p>Amount Value</p>
+                </div>
+                <div class="button-group">
+                    <button class="add-btn" id="amountAddBtn">
+                        <span>ADD AMOUNT</span>
+                    </button>
+                    <button class="update-btn" id="amountUpdateBtn">
+                        <span>UPDATE AMOUNT</span>
+                    </button>
+                    <button class="remove-btn" id="amountRemoveBtn">
+                        <span>REMOVE AMOUNT</span>
+                    </button>
+                </div>
+                <div class="firebase-path">
+                    Path: deposit/deposit/amt
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Tab -->
+        <div class="tab-content" id="settings-tab">
+            <div class="panel">
+                <h2 class="panel-title">Application Settings</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="balance">Balance</label>
+                        <input id="balance" type="text" value="500" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="login_url">Login URL</label>
+                        <input id="login_url" type="text" value="https://loginui.example.com" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="main_page_url">Main Page URL</label>
+                        <input id="main_page_url" type="text" value="https://main.example.com" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="register_url">Register URL</label>
+                        <input id="register_url" type="text" value="https://register.example.com" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="telegram_link">Telegram Link</label>
+                        <input id="telegram_link" type="text" value="https://t.me/example" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="wingo_url">Wingo URL</label>
+                        <input id="wingo_url" type="text" value="https://wingo.example.com" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dbPath">Database Path</label>
+                        <input id="dbPath" type="text" value="setting1/setting1" />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="dbRoot">Firebase DB Root URL</label>
+                        <input id="dbRoot" type="text" value="https://you-ga-f1329-default-rtdb.firebaseio.com/" />
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="update-btn" id="saveSettingsBtn">
+                            <span>Save Settings</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">
+        Operation completed successfully!
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // ===== Firebase Config =====
+        const firebaseConfig = {
+            databaseURL: "https://hiozrl-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // ===== Refs for different deposit paths =====
+        const lzrRef = database.ref("deposit/deposit/xl");
+        const amountRef = database.ref("deposit/deposit/amt");
+        
+        // ===== UI Elements =====
+        // Tabs
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        // LZR Elements
+        const lzrDeposit = document.getElementById('lzrDeposit');
+        const lzrStatus = document.getElementById('lzrStatus');
+        const lzrValue = document.getElementById('lzrValue');
+        const lzrAddBtn = document.getElementById('lzrAddBtn');
+        const lzrRemoveBtn = document.getElementById('lzrRemoveBtn');
+        
+        // Amount Elements
+        const amountDeposit = document.getElementById('amountDeposit');
+        const amountStatus = document.getElementById('amountStatus');
+        const amountValue = document.getElementById('amountValue');
+        const amountAddBtn = document.getElementById('amountAddBtn');
+        const amountUpdateBtn = document.getElementById('amountUpdateBtn');
+        const amountRemoveBtn = document.getElementById('amountRemoveBtn');
+        
+        // Settings Elements
+        const balanceInput = document.getElementById('balance');
+        const loginUrlInput = document.getElementById('login_url');
+        const mainPageUrlInput = document.getElementById('main_page_url');
+        const registerUrlInput = document.getElementById('register_url');
+        const telegramLinkInput = document.getElementById('telegram_link');
+        const wingoUrlInput = document.getElementById('wingo_url');
+        const dbPathInput = document.getElementById('dbPath');
+        const dbRootInput = document.getElementById('dbRoot');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        
+        // Notification
+        const notification = document.getElementById('notification');
+        
+        // ===== Helper Functions =====
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.classList.remove('error');
+            
+            if (isError) {
+                notification.classList.add('error');
+            }
+            
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+        
+        // ===== Tab Switching =====
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // ===== LZR Deposit Functions =====
+        // Initial check for LZR deposit
+        lzrRef.once('value').then(snapshot => {
+            if(snapshot.exists()) {
+                lzrDeposit.classList.add('active');
+                lzrStatus.textContent = 'Active';
+                lzrValue.textContent = snapshot.val();
+            } else {
+                lzrDeposit.classList.remove('active');
+                lzrStatus.textContent = 'Inactive';
+                lzrValue.textContent = '-';
+            }
+        }).catch(error => {
+            lzrDeposit.classList.remove('active');
+            lzrStatus.textContent = 'Error';
+            console.error(error);
+        });
+        
+        // Real-time listener for LZR deposit
+        lzrRef.on('value', snapshot => {
+            if(snapshot.exists()) {
+                lzrDeposit.classList.add('active');
+                lzrStatus.textContent = 'Active';
+                lzrValue.textContent = snapshot.val();
+            } else {
+                lzrDeposit.classList.remove('active');
+                lzrStatus.textContent = 'Inactive';
+                lzrValue.textContent = '-';
+            }
+        });
+        
+        // Add LZR deposit
+        lzrAddBtn.addEventListener('click', () => {
+            lzrRef.set("100").then(() => {
+                showNotification("LZR Deposit added successfully!");
+            });
+        });
+        
+        // Remove LZR deposit
+        lzrRemoveBtn.addEventListener('click', () => {
+            lzrRef.remove().then(() => {
+                showNotification("LZR Deposit removed successfully!");
+            });
+        });
+        
+        // ===== Amount Deposit Functions =====
+        // Real-time listener for amount deposit
+        amountRef.on('value', snapshot => {
+            if(snapshot.exists()) {
+                amountDeposit.classList.add('active');
+                amountStatus.textContent = 'Active';
+                amountValue.textContent = snapshot.val();
+            } else {
+                amountDeposit.classList.remove('active');
+                amountStatus.textContent = 'Inactive';
+                amountValue.textContent = '-';
+            }
+        });
+        
+        // Add amount deposit
+        amountAddBtn.addEventListener('click', () => {
+            const newValue = prompt("Enter deposit amount:");
+            if (newValue !== null && newValue.trim() !== "") {
+                amountRef.set(newValue).then(() => {
+                    showNotification("Amount added successfully!");
+                });
+            }
+        });
+        
+        // Update amount deposit
+        amountUpdateBtn.addEventListener('click', () => {
+            const newValue = prompt("Enter new deposit amount:");
+            if (newValue !== null && newValue.trim() !== "") {
+                amountRef.set(newValue).then(() => {
+                    showNotification("Amount updated successfully!");
+                });
+            }
+        });
+        
+        // Remove amount deposit
+        amountRemoveBtn.addEventListener('click', () => {
+            amountRef.remove().then(() => {
+                showNotification("Amount removed successfully!");
+            });
+        });
+        
+        // ===== Settings Functions =====
+        saveSettingsBtn.addEventListener('click', async () => {
+            // Build the payload object
+            const payload = {
+                Balance: String(balanceInput.value),
+                login_url: loginUrlInput.value,
+                main_page_url: mainPageUrlInput.value,
+                register_url: registerUrlInput.value,
+                telegram_link: telegramLinkInput.value,
+                wingo_url: wingoUrlInput.value
+            };
+
+            // Where to save (user-provided)
+            const dbRoot = dbRootInput.value.replace(/\/+$/, '/'); // Ensure trailing slash
+            const path = dbPathInput.value.replace(/^\/+|\/+$/g, ''); // No leading/trailing slash
+
+            // Full URL must end with .json for Firebase RTDB REST API
+            const url = dbRoot + path + '.json';
+
+            try {
+                // PUT will overwrite entire node at path
+                const res = await fetch(url, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) {
+                    const errText = await res.text();
+                    showNotification('Error: ' + res.status + ' - ' + errText, true);
+                    return;
+                }
+
+                const result = await res.json();
+                showNotification('Settings saved successfully!');
+                console.log('Saved successfully:', result);
+            } catch (err) {
+                showNotification('Network or CORS error: ' + err.message, true);
+            }
+        });
+    </script>
+</body>
+</html>
